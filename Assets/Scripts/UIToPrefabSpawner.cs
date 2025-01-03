@@ -32,6 +32,7 @@ public class UIToPrefabSpawner : MonoBehaviour, IPointerDownHandler, IPointerUpH
         }
         ghostTower = Instantiate(towerPrefab, canvas.transform);
         ghostTower.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.5f);
+        ghostTower.GetComponent<PositionableTower>().ToggleTowerRadiusVisualization();
         MapManager.Instance.PositionsTilemap.gameObject.SetActive(true);
     }
 
@@ -50,10 +51,12 @@ public class UIToPrefabSpawner : MonoBehaviour, IPointerDownHandler, IPointerUpH
         if (ghostTower != null)
         {
             PositionableTower dragTower = ghostTower.GetComponent<PositionableTower>();
-            if (dragTower != null && dragTower.IsOverDropZone())
+            if (dragTower != null && dragTower.IsOverDropZone() && !dragTower.isTouchingTowers)
             {
-                Vector3 snappedPosition = dragTower.SnapToGrid(ghostTower.transform.position);
-                var newTower = Instantiate(towerPrefab, snappedPosition, Quaternion.identity);
+
+                var newPosition = ghostTower.transform.position;
+
+                var newTower = Instantiate(towerPrefab, newPosition, Quaternion.identity);
                 newTower.GetComponent<PositionableTower>().OnDropPositionableTower();
             }
 
@@ -67,7 +70,7 @@ public class UIToPrefabSpawner : MonoBehaviour, IPointerDownHandler, IPointerUpH
         if (ghostTower != null)
         {
             PositionableTower dragTower = ghostTower.GetComponent<PositionableTower>();
-            UpdateColor(dragTower.IsOverDropZone());
+            UpdateColor(dragTower.IsOverDropZone() && !dragTower.isTouchingTowers);
         }
     }
     private void UpdateColor(bool isValid = false)

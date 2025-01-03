@@ -12,10 +12,12 @@ public class Player : MonoBehaviour
     public float StartingMoney = 100;
 
     private float _life;
+    private float _money;
 
     private void Start()
     {
-        _life = StartingLife;
+        Money = StartingMoney;
+        Life = StartingLife;
     }
 
     public float Life
@@ -35,7 +37,6 @@ public class Player : MonoBehaviour
         }
     }
 
-    private float _money = 100;
     public float Money
     {
         get

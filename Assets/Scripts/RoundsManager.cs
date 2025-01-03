@@ -77,6 +77,10 @@ public class RoundsManager : MonoBehaviour
     {
         _spawnedEnemies = newValue;
 
+        var level = SpawnedEnemies / DifficultyParameters.EnemiesCount;
+
+        UIManager.Instance.UpdateProgressBarLevel(level);
+
         if (_spawnedEnemies == DifficultyParameters.EnemiesCount)
         {
             GameManager.Instance.SetSpawnersState(false);

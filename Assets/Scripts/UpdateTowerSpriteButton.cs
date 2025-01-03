@@ -9,13 +9,35 @@ public class UpdateTowerSpriteButton : MonoBehaviour
 {
     TowerBase towerBase;
 
+    private TextMeshPro priceText;
+
     private void Start()
     {
-        var priceText = transform.GetChild(0).GetComponent<TextMeshPro>();
+        priceText = transform.GetComponentInChildren<TextMeshPro>();
+
         towerBase = transform.parent.GetComponent<TowerBase>();
 
-        priceText.text = Convert.ToString(towerBase.UpdatePrice);
+        UpdatePriceText(towerBase.UpdatePrice);
+
+        priceText.gameObject.SetActive(false);
     }
+
+    internal void UpdatePriceText(int price)
+    {
+        if (!priceText)
+            return;
+
+        priceText.text = Convert.ToString(price);
+    }
+
+    internal void TogglePriceVisualization()
+    {
+        if (priceText == null)
+            return;
+
+        priceText.gameObject.SetActive(!priceText.gameObject.activeSelf);
+    }
+
     private void OnMouseDown()
     {
         if (transform.parent != null)

@@ -39,5 +39,7 @@ public class Spawner : MonoBehaviour
         GameObject prefab = prefabsToSpawn[Random.Range(0, prefabsToSpawn.Length)];
 
         Instantiate(prefab, transform.position, Quaternion.identity);
+
+        
     }
 }

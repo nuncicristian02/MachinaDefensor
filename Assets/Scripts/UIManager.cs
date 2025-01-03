@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static Enums;
@@ -23,6 +24,7 @@ public class UIManager : MonoBehaviour
     private GameObject DeathPanel;
     private GameObject WonPanel;
     private GameObject NewRoundPanel;
+    private GameObject RoundProgressionBar;
 
     private void Awake()
     {
@@ -47,6 +49,7 @@ public class UIManager : MonoBehaviour
         DeathPanel.SetActive(false);
         WonPanel.SetActive(false);
         NewRoundPanel.SetActive(false);
+        UpdateProgressBarLevel(0);
 
         if (GameManager.Instance && GameManager.Instance.Player && scene.buildIndex == (int)GameScene.GameScene)
         {
@@ -67,6 +70,7 @@ public class UIManager : MonoBehaviour
         DeathPanel = GameObject.Find("DeathPanel");
         WonPanel = GameObject.Find("WonPanel");
         NewRoundPanel = GameObject.Find("NewRoundPanel");
+        RoundProgressionBar = GameObject.Find("RoundProgressionBar");
     }
 
     public void SetMoneyText(float moneyValue)
@@ -96,6 +100,7 @@ public class UIManager : MonoBehaviour
     {
         GameManager.Instance.ChangeScene((GameScene)1);
     }
+
     public void OnExitGameButtonClick()
     {
         Time.timeScale = 1f;
@@ -147,5 +152,16 @@ public class UIManager : MonoBehaviour
     internal void SetRoundText(float currentRoundNumber, float totRoundsNumber)
     {
         roundText.text = $"ROUND {currentRoundNumber}/{totRoundsNumber}";
+    }
+
+    internal void UpdateProgressBarLevel(float level)
+    {
+        if (level < 0 || level > 1)
+        {
+            Debug.Log($"Impossible to set the progression bar to the value {level}.");
+            return;
+        }
+
+        RoundProgressionBar.transform.localScale = new Vector3(level, RoundProgressionBar.transform.localScale.y, RoundProgressionBar.transform.localScale.z);
     }
 }
