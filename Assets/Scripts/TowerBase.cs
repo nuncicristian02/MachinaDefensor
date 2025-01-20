@@ -11,12 +11,61 @@ namespace Assets.Scripts
 {
     public abstract class TowerBase : PositionableTower
     {
-        public abstract void Attack(GameObject target);
+        public float _life = 100;
+        public float OriginalLife;
 
-        public float AttackCooldown = 5;
-        protected float LastAttack { get; set; } = 0;
-        public float ProjectileSpeed = 5f;
-        public float ProjectileDamage = 2f;
+        private GameObject TowerLifeGameObject;
+        private SpriteRenderer lifeBarSpriteRenderer;
+        public float Life
+        {
+            get
+            {
+                return _life;
+            }
+            set
+            {
+                _life = value;
+                ManageDeath();
+                ManageLifeBar();
+            }
+        }
+
+        public void Heal(float healingPoints)
+        {
+            Life += healingPoints;
+        }
+
+        private void ManageLifeBar()
+        {
+            if (!TowerLifeGameObject.activeSelf && _life < OriginalLife)
+            {
+                TowerLifeGameObject.SetActive(true);
+            }
+
+            if (_life > 0)
+            {
+                var newXLocalScale = _life / OriginalLife;
+
+                var lifeBarLocalScale = lifeBarSpriteRenderer.gameObject.transform.localScale;
+
+                var newLocalScale = new Vector3(newXLocalScale, lifeBarLocalScale.y, lifeBarLocalScale.z);
+
+                lifeBarSpriteRenderer.gameObject.transform.localScale = newLocalScale;
+            }
+        }
+
+        private void ManageDeath()
+        {
+            if (_life > 0) return;
+
+            GameObject.Destroy(gameObject);
+        }
+
+        public abstract void Effect(GameObject target);
+
+        public float EffectCooldown = 5;
+        protected float LastEffect { get; set; } = 0;
+        
         public float Price;
 
         public int Level;
@@ -43,6 +92,10 @@ namespace Assets.Scripts
             base.Awake();
             Level = 0;
             UpdatePrice = UpdatePrices[Level];
+
+            TowerLifeGameObject = transform.GetChild(1).gameObject;
+            lifeBarSpriteRenderer = TowerLifeGameObject?.transform.GetChild(0).GetComponent<SpriteRenderer>();
+            OriginalLife = _life;
         }
         private void Update()
         {
@@ -53,46 +106,28 @@ namespace Assets.Scripts
 
             var target = GetTarget();
 
-            if (Time.time - LastAttack >= AttackCooldown && target)
+            if (target)
             {
-                LastAttack = Time.time;
-                Attack(target);
+                RotateTowardsTarget(target.transform.position);
+            }
+
+            if (Time.time - LastEffect >= EffectCooldown && target)
+            {
+                LastEffect = Time.time;
+                Effect(target);
             }
         }
 
-        private GameObject GetTarget()
+        private void RotateTowardsTarget(Vector3 targetPosition)
         {
-            var target = FindClosestEnemyToPlayerBaseInTowerRadius();
+            Vector3 direction = targetPosition - transform.position;
 
-            return target ? target : null;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+            transform.rotation = Quaternion.Euler(0, 0, angle);
         }
 
-        private GameObject FindClosestEnemyToPlayerBaseInTowerRadius()
-        {
-            GameObject playerBase = GameObject.FindGameObjectWithTag("PlayerBase");
-
-            if (playerBase == null)
-            {
-                Debug.LogWarning("PlayerBase non trovato!");
-                return null;
-            }
-
-            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-            GameObject closestEnemy = null;
-            float closestDistance = Mathf.Infinity;
-
-            foreach (GameObject enemy in enemies.Where(x => TowerRadiusObject.GetComponent<Collider2D>().IsTouching(x.GetComponent<Collider2D>())))
-            {
-                float distance = Vector3.Distance(playerBase.transform.position, enemy.transform.position);
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestEnemy = enemy;
-                }
-            }
-
-            return closestEnemy;
-        }
+        protected abstract GameObject GetTarget();
 
         public override bool VerifyDraggable()
         {
@@ -139,7 +174,6 @@ namespace Assets.Scripts
                 Level += 1;
                 UpdatePrice = UpdatePrices[Level];
             }
-            ProjectileDamage += 1;
         }
     }    
 }

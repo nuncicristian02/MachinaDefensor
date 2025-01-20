@@ -15,10 +15,10 @@ public class PlayerBase : MonoBehaviour
             GameObject.Destroy(collision.gameObject);
 
             if (!GameManager.Instance.GetSpawnersState() 
-                && RoundsManager.Instance.SpawnedEnemies == RoundsManager.Instance.DifficultyParameters.EnemiesCount 
+                && RoundsManager.Instance.SpawnedEnemies == RoundsManager.Instance.RoundSpawnersParameters.TotEnemiesCount
                 && GameObject.FindObjectsOfType<Enemy>().Length == 1)
             {
-                RoundsManager.Instance.StartNextRound(GameManager.Instance.DefaultDiffParams);
+                RoundsManager.Instance.StartNextRound();
             }
         }
     }

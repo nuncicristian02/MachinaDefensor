@@ -11,7 +11,8 @@ public class Enemy : MonoBehaviour
     private GameObject EnemyLifeGameObject;
     private SpriteRenderer lifeBarSpriteRenderer;
 
-    public float _life;
+    public float _life = 10;
+    private float OriginalLife;
 
     internal float Damage = 10;
     public float DeathMoney = 10;
@@ -36,16 +37,12 @@ public class Enemy : MonoBehaviour
 
     private void Start()
     {
-        RoundsManager.Instance.SpawnedEnemies += 1;
         pathTilemap = MapManager.Instance.PathTilemap;
         _currentTargetTile = pathTilemap.WorldToCell(transform.position);
         _lastTile = _currentTargetTile;
         EnemyLifeGameObject = transform.GetChild(1).gameObject;
         lifeBarSpriteRenderer = EnemyLifeGameObject?.transform.GetChild(0).GetComponent<SpriteRenderer>();
-
-        Speed = RoundsManager.Instance.DifficultyParameters.EnemiesSpeed;
-        Life = RoundsManager.Instance.DifficultyParameters.EnemiesLife;
-        Damage = RoundsManager.Instance.DifficultyParameters.EnemiesDamage;
+        OriginalLife = _life;
     }
 
     void Update()
@@ -101,14 +98,14 @@ public class Enemy : MonoBehaviour
 
     private void ManageLifeBar()
     {
-        if (!EnemyLifeGameObject.activeSelf && _life < RoundsManager.Instance.DifficultyParameters.EnemiesLife)
+        if (!EnemyLifeGameObject.activeSelf && _life < OriginalLife)
         {
             EnemyLifeGameObject.SetActive(true);
         }
 
         if (_life > 0)
         {
-            var newXLocalScale = _life/ RoundsManager.Instance.DifficultyParameters.EnemiesLife;
+            var newXLocalScale = _life/ OriginalLife;
 
             var lifeBarLocalScale = lifeBarSpriteRenderer.gameObject.transform.localScale;
 

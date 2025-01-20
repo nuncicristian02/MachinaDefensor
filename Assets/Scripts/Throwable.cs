@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Projectile : MonoBehaviour
+public abstract class Throwable : MonoBehaviour
 {
     private Transform target;
     private float speed;
-    private float damage;
+    protected float damage;
 
     public void Initialize(Transform target, float speed, float damage)
     {
@@ -24,17 +24,19 @@ public class Projectile : MonoBehaviour
         }
 
         Vector3 direction = (target.position - transform.position).normalized;
-        transform.position += direction * speed * Time.deltaTime;
+        transform.position += speed * Time.deltaTime * direction;
 
         if (Vector3.Distance(transform.position, target.position) < 0.1f)
         {
-            var Enemy = target.GetComponent<Enemy>();
+            var enemy = target.GetComponent<Enemy>();
 
-            if (Enemy != null)
+            if (enemy != null)
             {
-                Enemy.TakeDamage(damage);
+                DoEffect(enemy);
             }
+
             Destroy(gameObject);
         }
     }
+    protected abstract void DoEffect(Enemy enemy);
 }

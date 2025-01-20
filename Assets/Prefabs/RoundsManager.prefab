@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TotRoundsNumber: 100
-  IncrementPercentage: 0.1
+  IncrementPercentage: 0.21
   DecrementPercentage: 0.05
 --- !u!95 &1798145253
 Animator:

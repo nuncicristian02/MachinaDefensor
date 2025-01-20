@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
@@ -12,9 +14,9 @@ public class RoundsManager : MonoBehaviour
     public float TotRoundsNumber;
     private float _currentRoundNumber = 1;
 
-    public DifficultyParameters DifficultyParameters;
+    public SpawnersParameters RoundSpawnersParameters;
 
-    public DifficultyParameters InternalDiffParams;
+    public SpawnersParameters InternalSpawnersParams;
 
     private int _roundKilledEnemies = 0;
 
@@ -37,6 +39,10 @@ public class RoundsManager : MonoBehaviour
         }
     }
 
+    internal int SpawnedBaseEnemies;
+    internal int SpawnedIntermediateEnemies;
+    internal int SpawnedBossEnemies;
+
     private int _spawnedEnemies = 0;
     internal int SpawnedEnemies
     {
@@ -50,22 +56,24 @@ public class RoundsManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            DifficultyParameters = new DifficultyParameters()
+
+            RoundSpawnersParameters = new SpawnersParameters()
             {
-                EnemiesCount = 5,
-                EnemiesSpeed = 3,
-                EnemiesLife = 10,
-                EnemiesDamage = 3,
+                BaseEnemiesCount = 5,
+                IntermediateEnemiesCount = 0.8f,
+                BossEnemiesCount = 0.45f,
                 SpawnCoolDown = 1
+
             };
 
-            InternalDiffParams = new DifficultyParameters()
+            SceneManager.sceneLoaded += OnSceneLoaded;
+
+            InternalSpawnersParams = new SpawnersParameters()
             {
-                EnemiesCount = DifficultyParameters.EnemiesCount,
-                EnemiesSpeed = DifficultyParameters.EnemiesSpeed,
-                EnemiesLife = DifficultyParameters.EnemiesLife,
-                EnemiesDamage = DifficultyParameters.EnemiesDamage,
-                SpawnCoolDown = DifficultyParameters.SpawnCoolDown
+                BaseEnemiesCount = 5,
+                IntermediateEnemiesCount = 0.8f,
+                BossEnemiesCount = 0.45f,
+                SpawnCoolDown = 1
             };
         }
         else
@@ -73,27 +81,35 @@ public class RoundsManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+    {
+        ResetRoundCounters();
+    }
+
     private void SpawnedEnemiesSetter(int newValue)
     {
         _spawnedEnemies = newValue;
 
-        var level = SpawnedEnemies / DifficultyParameters.EnemiesCount;
+        var level = SpawnedEnemies / RoundSpawnersParameters.TotEnemiesCount;
 
         UIManager.Instance.UpdateProgressBarLevel(level);
 
-        if (_spawnedEnemies == DifficultyParameters.EnemiesCount)
+        if (_spawnedEnemies == RoundSpawnersParameters.TotEnemiesCount)
         {
             GameManager.Instance.SetSpawnersState(false);
         }
     }
 
-    internal void StartNextRound(DifficultyParameters diffParams)
+    internal void StartNextRound()
     {
         CurrentRoundNumber += 1;
 
+        ResetRoundCounters();
+
         IncrementDifficulty();
 
-        GameManager.Instance.SetSpawnersCooldown(DifficultyParameters.SpawnCoolDown);
+        GameManager.Instance.SetSpawnersCooldown(RoundSpawnersParameters.SpawnCoolDown);
 
         _spawnedEnemies = 0;
         _roundKilledEnemies = 0;
@@ -101,12 +117,22 @@ public class RoundsManager : MonoBehaviour
         UIManager.Instance.ShowNewRoundPanel();
     }
 
+    private void ResetRoundCounters()
+    {
+        SpawnedBaseEnemies = 0;
+        SpawnedIntermediateEnemies = 0;
+        SpawnedBossEnemies = 0;
+
+        SpawnedEnemies = 0;
+        RoundKilledEnemies = 0;
+    }
+
 
     private void RoundKilledEnemiesSetter(int newValue)
     {
         _roundKilledEnemies = newValue;
 
-        if (_roundKilledEnemies < DifficultyParameters.EnemiesCount)
+        if (_roundKilledEnemies < RoundSpawnersParameters.TotEnemiesCount)
         {
             return;
         }
@@ -120,28 +146,26 @@ public class RoundsManager : MonoBehaviour
             return;
         }
 
-        StartNextRound(GameManager.Instance.DefaultDiffParams);
+        StartNextRound();
     }
 
     private void IncrementDifficulty()
     {
         float percentage = true ? IncrementPercentage : -DecrementPercentage;
 
-        InternalDiffParams.EnemiesCount = Mathf.Max(1, InternalDiffParams.EnemiesCount * (1 + percentage));
-        InternalDiffParams.EnemiesSpeed = Mathf.Max(0.1f, InternalDiffParams.EnemiesSpeed * (1 + percentage));
-        InternalDiffParams.EnemiesLife = Mathf.Max(1, InternalDiffParams.EnemiesLife * (1 + percentage));
-        InternalDiffParams.EnemiesDamage = Mathf.Max(1, InternalDiffParams.EnemiesDamage * (1 + percentage));
-        InternalDiffParams.SpawnCoolDown = Mathf.Max(0.2f, InternalDiffParams.SpawnCoolDown * (1 - percentage));
+        InternalSpawnersParams.BaseEnemiesCount = Mathf.Max(1, InternalSpawnersParams.TotEnemiesCount * (1 + percentage));
+        InternalSpawnersParams.IntermediateEnemiesCount = InternalSpawnersParams.IntermediateEnemiesCount * (1 + percentage);
+        InternalSpawnersParams.BossEnemiesCount = InternalSpawnersParams.BossEnemiesCount * (1 + percentage);
+        InternalSpawnersParams.SpawnCoolDown = Mathf.Max(0.2f, InternalSpawnersParams.SpawnCoolDown * (1 - percentage));
 
         UpdateCurrentParameters();
     }
 
     private void UpdateCurrentParameters()
     {
-        DifficultyParameters.EnemiesCount = Mathf.RoundToInt(InternalDiffParams.EnemiesCount);
-        DifficultyParameters.EnemiesSpeed = InternalDiffParams.EnemiesSpeed;
-        DifficultyParameters.EnemiesLife = Mathf.RoundToInt(InternalDiffParams.EnemiesLife);
-        DifficultyParameters.EnemiesDamage = Mathf.RoundToInt(InternalDiffParams.EnemiesDamage);
-        DifficultyParameters.SpawnCoolDown = InternalDiffParams.SpawnCoolDown;
+        RoundSpawnersParameters.BaseEnemiesCount = Mathf.RoundToInt(InternalSpawnersParams.BaseEnemiesCount);
+        RoundSpawnersParameters.IntermediateEnemiesCount = Mathf.RoundToInt(InternalSpawnersParams.IntermediateEnemiesCount);
+        RoundSpawnersParameters.BossEnemiesCount = Mathf.RoundToInt(InternalSpawnersParams.BossEnemiesCount);
+        RoundSpawnersParameters.SpawnCoolDown = InternalSpawnersParams.SpawnCoolDown;
     }
 }

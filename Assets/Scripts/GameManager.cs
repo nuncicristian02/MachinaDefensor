@@ -14,8 +14,6 @@ public class GameManager : MonoBehaviour
 
     private bool _spawnersState = true;
 
-    internal DifficultyParameters DefaultDiffParams;
-
     private void Awake()
     {
         if (Instance == null)
@@ -24,14 +22,6 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             FindReferences();
             SceneManager.sceneLoaded += OnChangeScene;
-            DefaultDiffParams = new DifficultyParameters()
-            {
-                EnemiesCount = 5,
-                EnemiesSpeed = 3,
-                EnemiesLife = 10,
-                EnemiesDamage = 3,
-                SpawnCoolDown = 1
-            };
         }
         else
         {

@@ -44,7 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33b04fd2ef4c8864698b3d08ed7e0e98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabsToSpawn:
+  BaseEnemyPrefabs:
   - {fileID: 513601304825941025, guid: 08d86b549d78b2e408053a0be974451c, type: 3}
-  spawnCooldown: 3
+  IntermediateEnemyPrefabs:
+  - {fileID: 513601304825941025, guid: dc49771fec61bd740b4c416ee9870f82, type: 3}
+  BossEnemyPrefabs:
+  - {fileID: 1644279385138207237, guid: 5635cb00ccd25574db5cc7d039bc0f9f, type: 3}
+  SpawnCooldown: 2
+  IsActive: 1
   spawnAreaSize: {x: 5, y: 5}
